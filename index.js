@@ -2,10 +2,17 @@ import express from "express";
 import dotenv from "dotenv";
 import mongoose from "mongoose";
 import fileUpload from "express-fileupload";
+import cors from "cors"
 const app = express();
 app.use(fileUpload());
 dotenv.config();
 app.use(express.json());
+app.use(cors())
+// app.use(cors({
+//   origin:["",""]
+// }))
+app.use('/file',express.static("./Upload"))  //   baad main kiya hai
+
 
 const dbConn = async () => {
   const Conn = await mongoose.connect("mongodb://localhost:27017/FileUpload");
@@ -14,16 +21,13 @@ const dbConn = async () => {
   }
 };
 dbConn();
-
 const UserDataAgain = new mongoose.Schema({
   name: String,
   email: String,
   password: String,
   profile: String,
 });
-
 const UserModel = mongoose.model("User-Data-Again", UserDataAgain);
-
 app.post("/create", async (req, res) => {
   try {
     const { name, email, password } = req.body;
@@ -54,15 +58,17 @@ app.post("/create", async (req, res) => {
   }
 });
 
+
 app.get("/file-data",async(req,res)=>{
   // const {name,email,password,profile} = req.body
-  const result = await UserModel.find()
+  const result = await UserModel.find().sort({email:1})
   res.json({
     data:result
   })
 })
-const Port = process.env.PORT || 9000;
 
+
+const Port = process.env.PORT || 9000;
 app.listen(Port, () => {
   console.log(`Server is running on ${Port}`);
 });
